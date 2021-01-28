@@ -1,6 +1,7 @@
 import os
 from TwitterAPI import TwitterAPI, TwitterResponse, TwitterPager
 from pymongo import MongoClient, DESCENDING
+from pymongo.errors import DuplicateKeyError
 from datetime import datetime
 import math
 
@@ -73,7 +74,11 @@ if __name__ == "__main__":
                 if tweet['id'] > max_id:
                     max_id = tweet['id']
             tweet['_id'] = tweet['id']
-            tweets_collection.replace_one(tweet, tweet, upsert=True)
+            try:
+                tweets_collection.replace_one(tweet, tweet, upsert=True)
+            except DuplicateKeyError:
+                print("Duplicate tweet ", tweet, " ,moving on")
+                continue
         elif 'message' in tweet:
             print("got error", tweet)
             break
